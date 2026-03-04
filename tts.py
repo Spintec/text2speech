@@ -8,6 +8,7 @@ Usage:
   echo "Hello" | tts
   tts -v af_heart -s 1.2 "Hello"
   tts -o output.wav "Hello"
+  tts --url https://example.com/article
   tts --list-voices
 """
 
@@ -52,6 +53,33 @@ def list_voices():
         lang = "British English" if voice_id.startswith("b") else "American English"
         print(f"  {voice_id:<16} {description}")
     print()
+
+
+def fetch_article(url: str, quiet: bool) -> str:
+    try:
+        import trafilatura
+    except ImportError:
+        print("Error: trafilatura is not installed. Run: pip install trafilatura", file=sys.stderr)
+        sys.exit(1)
+
+    if not quiet:
+        print(f"Fetching: {url}", file=sys.stderr)
+
+    downloaded = trafilatura.fetch_url(url)
+    if not downloaded:
+        print(f"Error: could not fetch URL: {url}", file=sys.stderr)
+        sys.exit(1)
+
+    text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+    if not text:
+        print("Error: no article content found at that URL.", file=sys.stderr)
+        sys.exit(1)
+
+    if not quiet:
+        words = len(text.split())
+        print(f"Extracted {words} words.", file=sys.stderr)
+
+    return text
 
 
 def speak(text: str, voice: str, speed: float, output: str | None, quiet: bool):
@@ -107,6 +135,8 @@ def main():
                         help="Speech speed multiplier (default: 1.0)")
     parser.add_argument("-o", "--output", metavar="FILE",
                         help="Save audio to file instead of playing (e.g. out.wav, out.mp3)")
+    parser.add_argument("--url", metavar="URL",
+                        help="Fetch and read a news article from a URL")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Suppress status messages")
     parser.add_argument("--list-voices", action="store_true",
@@ -118,7 +148,9 @@ def main():
         list_voices()
         return
 
-    if args.text:
+    if args.url:
+        text = fetch_article(args.url, args.quiet)
+    elif args.text:
         text = args.text
     elif not sys.stdin.isatty():
         text = sys.stdin.read().strip()
