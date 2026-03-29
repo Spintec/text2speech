@@ -1,0 +1,6 @@
+{
+    "newsapi": {
+        "api_key": "",
+        "base_url": "https://newsapi.org/v2"
+    }
+}
