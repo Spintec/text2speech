@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""Kokoro TTS Web App - Browser-based text-to-speech using local Kokoro-82M model."""
+
+import io
+
+import numpy as np
+import soundfile as sf
+from flask import Flask, render_template, request, jsonify, send_file
+
+from tts import VOICES, get_lang_code, fetch_article
+
+app = Flask(__name__)
+
+_pipelines = {}
+
+
+def get_pipeline(lang_code):
+    if lang_code not in _pipelines:
+        from kokoro import KPipeline
+        _pipelines[lang_code] = KPipeline(lang_code=lang_code)
+    return _pipelines[lang_code]
+
+
+def generate_audio(text, voice, speed):
+    lang_code = get_lang_code(voice)
+    pipeline = get_pipeline(lang_code)
+
+    audio_chunks = []
+    for _, _, audio in pipeline(text, voice=voice, speed=speed, split_pattern=r'\n+'):
+        audio_chunks.append(audio)
+
+    if not audio_chunks:
+        return None
+
+    combined = np.concatenate(audio_chunks)
+    buf = io.BytesIO()
+    sf.write(buf, combined, 24000, format='WAV')
+    buf.seek(0)
+    return buf
+
+
+@app.route('/')
+def index():
+    return render_template('index.html', voices=VOICES)
+
+
+@app.route('/synthesize', methods=['POST'])
+def synthesize():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON body"}), 400
+
+    text = data.get('text', '').strip()
+    voice = data.get('voice', 'af_heart')
+    speed = float(data.get('speed', 1.0))
+
+    if not text:
+        return jsonify({"error": "No text provided"}), 400
+
+    if voice not in VOICES:
+        return jsonify({"error": f"Unknown voice: {voice}"}), 400
+
+    buf = generate_audio(text, voice, speed)
+    if buf is None:
+        return jsonify({"error": "No audio generated"}), 500
+
+    return send_file(buf, mimetype='audio/wav', download_name='speech.wav')
+
+
+@app.route('/fetch-url', methods=['POST'])
+def fetch_url():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON body"}), 400
+
+    url = data.get('url', '').strip()
+    if not url:
+        return jsonify({"error": "No URL provided"}), 400
+
+    try:
+        text = fetch_article(url, quiet=True)
+    except SystemExit:
+        return jsonify({"error": "Could not fetch or extract article from URL"}), 400
+
+    return jsonify({"text": text})
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)

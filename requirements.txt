@@ -3,3 +3,4 @@ soundfile
 sounddevice
 numpy
 trafilatura
+flask
