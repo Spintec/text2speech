@@ -9,6 +9,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download spaCy language model and Kokoro-82M weights from HuggingFace
+RUN python -m spacy download en_core_web_sm && \
+    python -c "from kokoro import KPipeline; KPipeline(lang_code='a')"
+
 COPY . .
 
 EXPOSE 5000
