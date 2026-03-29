@@ -4,6 +4,19 @@ Local text-to-speech using the [Kokoro-82M](https://huggingface.co/hexgrad/Kokor
 
 ## Installation
 
+### Docker (recommended)
+
+Build and run with a single command -- no system dependencies needed:
+
+```bash
+docker build -t kokoro-tts .
+docker run -p 5000:5000 kokoro-tts
+```
+
+Open http://localhost:5000 in your browser.
+
+### Local
+
 Requires Python 3.10-3.12, espeak-ng, and portaudio.
 
 Run the install script to set everything up automatically:
