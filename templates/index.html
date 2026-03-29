@@ -13,8 +13,189 @@
             color: #e0e0e0;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+        }
+
+        /* --- Layout --- */
+        .layout {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* --- Queue Panel (left) --- */
+        .queue-panel {
+            width: 320px;
+            min-width: 320px;
+            background: #141414;
+            border-right: 1px solid #252525;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .queue-header {
+            padding: 1.25rem 1rem 0.75rem;
+            border-bottom: 1px solid #252525;
+        }
+
+        .queue-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.75rem;
+        }
+
+        .queue-add-row {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .queue-add-row input {
+            flex: 1;
+            padding: 0.45rem 0.6rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .queue-add-row input:focus {
+            border-color: #555;
+        }
+
+        .queue-add-row button {
+            padding: 0.45rem 0.7rem;
+            font-size: 0.8rem;
+        }
+
+        .queue-controls {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #252525;
+        }
+
+        .queue-controls button {
+            flex: 1;
+            padding: 0.4rem 0;
+            font-size: 0.75rem;
+            border-radius: 5px;
+        }
+
+        .queue-controls button.active {
+            background: #6c63ff;
+            color: #fff;
+        }
+
+        .queue-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .queue-item:hover {
+            background: #1f1f1f;
+        }
+
+        .queue-item.active {
+            background: #1a1a2e;
+        }
+
+        .queue-item.playing {
+            background: #1a1a2e;
+        }
+
+        .queue-item-number {
+            font-size: 0.75rem;
+            color: #555;
+            min-width: 1.25rem;
+            text-align: right;
+        }
+
+        .queue-item.playing .queue-item-number {
+            color: #6c63ff;
+        }
+
+        .queue-item-title {
+            flex: 1;
+            font-size: 0.85rem;
+            color: #ccc;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .queue-item.playing .queue-item-title {
+            color: #6c63ff;
+            font-weight: 500;
+        }
+
+        .queue-item-remove {
+            opacity: 0;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0.25rem;
+            line-height: 1;
+            transition: opacity 0.15s, color 0.15s;
+        }
+
+        .queue-item:hover .queue-item-remove {
+            opacity: 1;
+        }
+
+        .queue-item-remove:hover {
+            color: #ff6b6b;
+        }
+
+        .queue-item-status {
+            font-size: 0.7rem;
+            color: #555;
+            min-width: 1rem;
+            text-align: center;
+        }
+
+        .queue-item.fetching .queue-item-status::after {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border: 1.5px solid #fff3;
+            border-top-color: #6c63ff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .queue-empty {
             padding: 2rem 1rem;
+            text-align: center;
+            color: #444;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* --- Main Panel (right) --- */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
         }
 
         .container {
@@ -88,9 +269,7 @@
             flex: 1;
         }
 
-        select {
-            cursor: pointer;
-        }
+        select { cursor: pointer; }
 
         .speed-control {
             display: flex;
@@ -149,6 +328,17 @@
             background: #333;
         }
 
+        .btn-icon {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-icon:hover:not(:disabled) {
+            background: #333;
+        }
+
         .result {
             margin-top: 1.5rem;
             padding: 1.25rem;
@@ -158,13 +348,17 @@
             display: none;
         }
 
-        .result.visible {
-            display: block;
-        }
+        .result.visible { display: block; }
 
         .result audio {
             width: 100%;
             margin-bottom: 0.75rem;
+        }
+
+        .result-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .download-link {
@@ -175,8 +369,14 @@
             font-weight: 500;
         }
 
-        .download-link:hover {
-            text-decoration: underline;
+        .download-link:hover { text-decoration: underline; }
+
+        .now-playing {
+            font-size: 0.8rem;
+            color: #888;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .error {
@@ -190,9 +390,7 @@
             display: none;
         }
 
-        .error.visible {
-            display: block;
-        }
+        .error.visible { display: block; }
 
         .spinner {
             display: inline-block;
@@ -209,51 +407,104 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Drag and drop */
+        .queue-item.dragging {
+            opacity: 0.4;
+        }
+
+        .queue-item.drag-over {
+            border-top: 2px solid #6c63ff;
+        }
+
+        @media (max-width: 800px) {
+            .layout {
+                flex-direction: column;
+            }
+            .queue-panel {
+                width: 100%;
+                min-width: unset;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid #252525;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kokoro TTS</h1>
-        <p class="subtitle">Text-to-speech using local Kokoro-82M model</p>
-
-        <label for="url-input">Article URL</label>
-        <div class="url-row">
-            <input type="text" id="url-input" placeholder="https://example.com/article">
-            <button class="btn-secondary" id="fetch-btn" onclick="fetchUrl()">Fetch</button>
-        </div>
-
-        <label for="text-input">Text</label>
-        <textarea id="text-input" placeholder="Enter text to speak..."></textarea>
-
-        <div class="controls">
-            <div class="control-group">
-                <label for="voice-select">Voice</label>
-                <select id="voice-select">
-                    {% for id, name in voices.items() %}
-                    <option value="{{ id }}">{{ name }}</option>
-                    {% endfor %}
-                </select>
+    <div class="layout">
+        <!-- Queue Panel -->
+        <div class="queue-panel">
+            <div class="queue-header">
+                <h2>Queue</h2>
+                <div class="queue-add-row">
+                    <input type="text" id="queue-url-input" placeholder="Paste article URL...">
+                    <button class="btn-secondary" id="queue-add-btn" onclick="queueAddUrl()">Add</button>
+                </div>
             </div>
-            <div class="control-group">
-                <label>Speed</label>
-                <div class="speed-control">
-                    <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0">
-                    <span class="speed-value" id="speed-display">1.0x</span>
+            <div class="queue-controls">
+                <button class="btn-icon" id="btn-play-queue" onclick="playQueue()" title="Play queue">&#9654; Play</button>
+                <button class="btn-icon" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">&#8645; Shuffle</button>
+                <button class="btn-icon" id="btn-repeat" onclick="toggleRepeat()" title="Repeat">&#8635; Repeat</button>
+                <button class="btn-icon" id="btn-clear-queue" onclick="clearQueue()" title="Clear queue">Clear</button>
+            </div>
+            <div class="queue-list" id="queue-list">
+                <div class="queue-empty" id="queue-empty">
+                    Add article URLs to build<br>a listening queue
                 </div>
             </div>
         </div>
 
-        <button class="btn-primary" id="generate-btn" onclick="synthesize()">Generate Speech</button>
+        <!-- Main Panel -->
+        <div class="main-panel">
+            <div class="container">
+                <h1>Kokoro TTS</h1>
+                <p class="subtitle">Text-to-speech using local Kokoro-82M model</p>
 
-        <div class="error" id="error-box"></div>
+                <label for="url-input">Article URL</label>
+                <div class="url-row">
+                    <input type="text" id="url-input" placeholder="https://example.com/article">
+                    <button class="btn-secondary" id="fetch-btn" onclick="fetchUrl()">Fetch</button>
+                </div>
 
-        <div class="result" id="result-box">
-            <audio controls id="audio-player"></audio>
-            <a class="download-link" id="download-link" download="speech.wav">Download audio</a>
+                <label for="text-input">Text</label>
+                <textarea id="text-input" placeholder="Enter text to speak..."></textarea>
+
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="voice-select">Voice</label>
+                        <select id="voice-select">
+                            {% for id, name in voices.items() %}
+                            <option value="{{ id }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Speed</label>
+                        <div class="speed-control">
+                            <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.0">
+                            <span class="speed-value" id="speed-display">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="generate-btn" onclick="synthesize()">Generate Speech</button>
+
+                <div class="error" id="error-box"></div>
+
+                <div class="result" id="result-box">
+                    <audio controls id="audio-player"></audio>
+                    <div class="result-actions">
+                        <a class="download-link" id="download-link" download="speech.wav">Download audio</a>
+                        <span class="now-playing" id="now-playing-label"></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // --- DOM refs ---
         const urlInput = document.getElementById('url-input');
         const textInput = document.getElementById('text-input');
         const voiceSelect = document.getElementById('voice-select');
@@ -265,22 +516,39 @@
         const resultBox = document.getElementById('result-box');
         const audioPlayer = document.getElementById('audio-player');
         const downloadLink = document.getElementById('download-link');
+        const nowPlayingLabel = document.getElementById('now-playing-label');
+        const queueUrlInput = document.getElementById('queue-url-input');
+        const queueList = document.getElementById('queue-list');
+        const queueEmpty = document.getElementById('queue-empty');
+        const btnShuffle = document.getElementById('btn-shuffle');
+        const btnRepeat = document.getElementById('btn-repeat');
 
         let currentBlobUrl = null;
 
+        // --- Queue state ---
+        let queue = [];          // [{id, url, title, text, status: 'fetching'|'ready'|'error'}]
+        let queueIndex = -1;     // current playing index in playOrder
+        let playOrder = [];       // indices into queue[], may be shuffled
+        let shuffleOn = false;
+        let repeatOn = false;
+        let queuePlaying = false;
+        let nextId = 0;
+
+        // --- Speed slider ---
         speedSlider.addEventListener('input', () => {
             speedDisplay.textContent = parseFloat(speedSlider.value).toFixed(1) + 'x';
         });
 
+        // --- Error display ---
         function showError(msg) {
             errorBox.textContent = msg;
             errorBox.classList.add('visible');
         }
-
         function hideError() {
             errorBox.classList.remove('visible');
         }
 
+        // --- Fetch URL (main panel) ---
         async function fetchUrl() {
             const url = urlInput.value.trim();
             if (!url) return;
@@ -309,11 +577,15 @@
             }
         }
 
-        async function synthesize() {
-            const text = textInput.value.trim();
+        // --- Synthesize (main panel, also used by queue) ---
+        async function synthesize(text, queueItemTitle) {
+            // If called without args, use the text area
+            if (text === undefined) {
+                text = textInput.value.trim();
+            }
             if (!text) {
                 showError('Please enter some text');
-                return;
+                return false;
             }
 
             hideError();
@@ -335,7 +607,7 @@
                 if (!res.ok) {
                     const data = await res.json();
                     showError(data.error || 'Generation failed');
-                    return;
+                    return false;
                 }
 
                 const blob = await res.blob();
@@ -347,22 +619,285 @@
 
                 audioPlayer.src = currentBlobUrl;
                 downloadLink.href = currentBlobUrl;
+                nowPlayingLabel.textContent = queueItemTitle || '';
                 resultBox.classList.add('visible');
                 audioPlayer.play();
+                return true;
             } catch (e) {
                 showError('Network error during synthesis');
+                return false;
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = 'Generate Speech';
             }
         }
 
-        // Allow Ctrl+Enter to generate
+        // Ctrl+Enter
         textInput.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                synthesize();
-            }
+            if (e.ctrlKey && e.key === 'Enter') synthesize();
         });
+
+        // Enter in queue URL input
+        queueUrlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') queueAddUrl();
+        });
+
+        // --- Queue functions ---
+        async function queueAddUrl() {
+            const url = queueUrlInput.value.trim();
+            if (!url) return;
+            queueUrlInput.value = '';
+
+            const item = {
+                id: nextId++,
+                url,
+                title: url,
+                text: null,
+                status: 'fetching'
+            };
+            queue.push(item);
+            rebuildPlayOrder();
+            renderQueue();
+
+            // Fetch in background
+            try {
+                const res = await fetch('/fetch-url', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    item.status = 'error';
+                    item.title = '(Error) ' + url;
+                } else {
+                    item.status = 'ready';
+                    item.title = data.title || url;
+                    item.text = data.text;
+                }
+            } catch (e) {
+                item.status = 'error';
+                item.title = '(Error) ' + url;
+            }
+            renderQueue();
+        }
+
+        function removeQueueItem(id) {
+            const idx = queue.findIndex(q => q.id === id);
+            if (idx === -1) return;
+
+            // If removing the currently playing item, stop
+            const playingQueueIdx = queueIndex >= 0 && queueIndex < playOrder.length ? playOrder[queueIndex] : -1;
+            queue.splice(idx, 1);
+            rebuildPlayOrder();
+
+            // Adjust queueIndex if needed
+            if (idx === playingQueueIdx) {
+                queueIndex = -1;
+            } else if (queueIndex >= 0 && queueIndex >= playOrder.length) {
+                queueIndex = playOrder.length - 1;
+            }
+
+            renderQueue();
+        }
+
+        function clearQueue() {
+            queue = [];
+            playOrder = [];
+            queueIndex = -1;
+            queuePlaying = false;
+            renderQueue();
+        }
+
+        function rebuildPlayOrder() {
+            playOrder = queue.map((_, i) => i);
+            if (shuffleOn) {
+                // Fisher-Yates shuffle
+                for (let i = playOrder.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [playOrder[i], playOrder[j]] = [playOrder[j], playOrder[i]];
+                }
+            }
+        }
+
+        function toggleShuffle() {
+            shuffleOn = !shuffleOn;
+            btnShuffle.classList.toggle('active', shuffleOn);
+            rebuildPlayOrder();
+        }
+
+        function toggleRepeat() {
+            repeatOn = !repeatOn;
+            btnRepeat.classList.toggle('active', repeatOn);
+        }
+
+        async function playQueue() {
+            if (queue.length === 0) return;
+            queuePlaying = true;
+            queueIndex = 0;
+            await playCurrentQueueItem();
+        }
+
+        async function playQueueItemAt(queueIdx) {
+            // Find this queueIdx in playOrder, or just set directly
+            const orderIdx = playOrder.indexOf(queueIdx);
+            if (orderIdx === -1) return;
+            queuePlaying = true;
+            queueIndex = orderIdx;
+            await playCurrentQueueItem();
+        }
+
+        async function playCurrentQueueItem() {
+            if (queueIndex < 0 || queueIndex >= playOrder.length) {
+                queuePlaying = false;
+                queueIndex = -1;
+                renderQueue();
+                return;
+            }
+
+            const item = queue[playOrder[queueIndex]];
+            if (!item || item.status !== 'ready') {
+                // Skip non-ready items
+                queueIndex++;
+                if (queueIndex >= playOrder.length) {
+                    if (repeatOn) {
+                        rebuildPlayOrder();
+                        queueIndex = 0;
+                    } else {
+                        queuePlaying = false;
+                        queueIndex = -1;
+                        renderQueue();
+                        return;
+                    }
+                }
+                await playCurrentQueueItem();
+                return;
+            }
+
+            renderQueue();
+            textInput.value = item.text;
+            const ok = await synthesize(item.text, item.title);
+
+            if (!ok) {
+                queuePlaying = false;
+                queueIndex = -1;
+                renderQueue();
+            }
+            // Playback continuation handled by audio 'ended' event
+        }
+
+        // When audio ends, advance queue
+        audioPlayer.addEventListener('ended', () => {
+            if (!queuePlaying) return;
+            queueIndex++;
+            if (queueIndex >= playOrder.length) {
+                if (repeatOn) {
+                    rebuildPlayOrder();
+                    queueIndex = 0;
+                } else {
+                    queuePlaying = false;
+                    queueIndex = -1;
+                    renderQueue();
+                    return;
+                }
+            }
+            playCurrentQueueItem();
+        });
+
+        // --- Drag and drop reorder ---
+        let dragIdx = null;
+
+        function onDragStart(e, idx) {
+            dragIdx = idx;
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.classList.add('dragging');
+        }
+
+        function onDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.queue-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+            dragIdx = null;
+        }
+
+        function onDragOver(e, idx) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const el = e.currentTarget;
+            document.querySelectorAll('.queue-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+            if (idx !== dragIdx) el.classList.add('drag-over');
+        }
+
+        function onDrop(e, idx) {
+            e.preventDefault();
+            document.querySelectorAll('.queue-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+            if (dragIdx === null || dragIdx === idx) return;
+
+            const [moved] = queue.splice(dragIdx, 1);
+            queue.splice(idx, 0, moved);
+            rebuildPlayOrder();
+            renderQueue();
+        }
+
+        // --- Render queue list ---
+        function renderQueue() {
+            const playingQueueIdx = queueIndex >= 0 && queueIndex < playOrder.length ? playOrder[queueIndex] : -1;
+
+            if (queue.length === 0) {
+                queueEmpty.style.display = '';
+                // Remove all items but keep the empty message
+                Array.from(queueList.children).forEach(ch => {
+                    if (ch !== queueEmpty) ch.remove();
+                });
+                return;
+            }
+
+            queueEmpty.style.display = 'none';
+
+            // Rebuild item elements
+            // Clear existing items (except empty msg)
+            Array.from(queueList.children).forEach(ch => {
+                if (ch !== queueEmpty) ch.remove();
+            });
+
+            queue.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = 'queue-item';
+                if (i === playingQueueIdx && queuePlaying) div.classList.add('playing');
+                if (item.status === 'fetching') div.classList.add('fetching');
+                div.draggable = true;
+                div.ondragstart = (e) => onDragStart(e, i);
+                div.ondragend = onDragEnd;
+                div.ondragover = (e) => onDragOver(e, i);
+                div.ondrop = (e) => onDrop(e, i);
+
+                const num = document.createElement('span');
+                num.className = 'queue-item-number';
+                num.textContent = (i + 1);
+
+                const status = document.createElement('span');
+                status.className = 'queue-item-status';
+
+                const title = document.createElement('span');
+                title.className = 'queue-item-title';
+                title.textContent = item.title;
+                title.title = item.title;
+                title.onclick = () => {
+                    if (item.status === 'ready') playQueueItemAt(i);
+                };
+
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'queue-item-remove';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.title = 'Remove';
+                removeBtn.onclick = (e) => { e.stopPropagation(); removeQueueItem(item.id); };
+
+                div.appendChild(num);
+                div.appendChild(status);
+                div.appendChild(title);
+                div.appendChild(removeBtn);
+                queueList.appendChild(div);
+            });
+        }
     </script>
 </body>
 </html>

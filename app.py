@@ -7,7 +7,7 @@ import numpy as np
 import soundfile as sf
 from flask import Flask, render_template, request, jsonify, send_file
 
-from tts import VOICES, get_lang_code, fetch_article
+from tts import VOICES, get_lang_code
 
 app = Flask(__name__)
 
@@ -78,11 +78,21 @@ def fetch_url():
         return jsonify({"error": "No URL provided"}), 400
 
     try:
-        text = fetch_article(url, quiet=True)
-    except SystemExit:
-        return jsonify({"error": "Could not fetch or extract article from URL"}), 400
+        import trafilatura
+        downloaded = trafilatura.fetch_url(url)
+        if not downloaded:
+            return jsonify({"error": "Could not fetch URL"}), 400
 
-    return jsonify({"text": text})
+        text = trafilatura.extract(downloaded, include_comments=False, include_tables=False)
+        if not text:
+            return jsonify({"error": "No article content found at that URL"}), 400
+
+        metadata = trafilatura.extract_metadata(downloaded)
+        title = metadata.title if metadata and metadata.title else url
+    except ImportError:
+        return jsonify({"error": "trafilatura is not installed"}), 500
+
+    return jsonify({"text": text, "title": title})
 
 
 if __name__ == '__main__':
