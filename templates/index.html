@@ -71,6 +71,120 @@
             font-size: 0.8rem;
         }
 
+        .queue-search {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #252525;
+        }
+
+        .queue-search-row {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .queue-search-row input {
+            flex: 1;
+            padding: 0.45rem 0.6rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .queue-search-row input:focus {
+            border-color: #555;
+        }
+
+        .queue-search-row button {
+            padding: 0.45rem 0.7rem;
+            font-size: 0.8rem;
+        }
+
+        .queue-search-feed {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .queue-search-feed select {
+            flex: 1;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.75rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .search-results {
+            max-height: 250px;
+            overflow-y: auto;
+            border-bottom: 1px solid #252525;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 0.45rem 1rem;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        .search-result-item:hover {
+            background: #1f1f1f;
+        }
+
+        .search-result-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-result-add {
+            background: none;
+            border: none;
+            color: #6c63ff;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .search-result-add:hover {
+            background: #6c63ff22;
+        }
+
+        .search-results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+            color: #666;
+            border-bottom: 1px solid #1e1e1e;
+        }
+
+        .search-results-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 0 0.25rem;
+        }
+
+        .search-results-close:hover {
+            color: #aaa;
+        }
+
         .queue-controls {
             display: flex;
             gap: 0.25rem;
@@ -442,6 +556,16 @@
                     <button class="btn-secondary" id="queue-add-btn" onclick="queueAddUrl()">Add</button>
                 </div>
             </div>
+            <div class="queue-search">
+                <div class="queue-search-row">
+                    <input type="text" id="rss-search-input" placeholder="Search articles...">
+                    <button class="btn-secondary" id="rss-search-btn" onclick="searchRss()">Search</button>
+                </div>
+                <div class="queue-search-feed">
+                    <select id="rss-feed-select"></select>
+                </div>
+            </div>
+            <div class="search-results" id="search-results" style="display:none;"></div>
             <div class="queue-controls">
                 <button class="btn-icon" id="btn-play-queue" onclick="playQueue()" title="Play queue">&#9654; Play</button>
                 <button class="btn-icon" id="btn-shuffle" onclick="toggleShuffle()" title="Shuffle">&#8645; Shuffle</button>
@@ -522,6 +646,11 @@
         const queueEmpty = document.getElementById('queue-empty');
         const btnShuffle = document.getElementById('btn-shuffle');
         const btnRepeat = document.getElementById('btn-repeat');
+
+        const rssSearchInput = document.getElementById('rss-search-input');
+        const rssFeedSelect = document.getElementById('rss-feed-select');
+        const rssSearchBtn = document.getElementById('rss-search-btn');
+        const searchResultsDiv = document.getElementById('search-results');
 
         let currentBlobUrl = null;
 
@@ -898,6 +1027,92 @@
                 queueList.appendChild(div);
             });
         }
+        // --- RSS Search ---
+        async function loadRssFeeds() {
+            try {
+                const res = await fetch('/rss-feeds');
+                const feeds = await res.json();
+                rssFeedSelect.innerHTML = '';
+                for (const [id, name] of Object.entries(feeds)) {
+                    const opt = document.createElement('option');
+                    opt.value = id;
+                    opt.textContent = name;
+                    rssFeedSelect.appendChild(opt);
+                }
+            } catch (e) {
+                // Fallback
+                rssFeedSelect.innerHTML = '<option value="hackernews">Hacker News</option>';
+            }
+        }
+
+        async function searchRss() {
+            const query = rssSearchInput.value.trim();
+            if (!query) return;
+
+            rssSearchBtn.disabled = true;
+            rssSearchBtn.innerHTML = '<span class="spinner"></span>';
+
+            try {
+                const res = await fetch('/search-rss', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query,
+                        feed: rssFeedSelect.value,
+                        count: 10
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showError(data.error || 'Search failed');
+                    searchResultsDiv.style.display = 'none';
+                    return;
+                }
+
+                renderSearchResults(data.results, data.feed_name);
+            } catch (e) {
+                showError('Network error during search');
+            } finally {
+                rssSearchBtn.disabled = false;
+                rssSearchBtn.textContent = 'Search';
+            }
+        }
+
+        function renderSearchResults(results, feedName) {
+            if (!results.length) {
+                searchResultsDiv.innerHTML = '<div style="padding:1rem;text-align:center;color:#555;font-size:0.8rem;">No results found</div>';
+                searchResultsDiv.style.display = '';
+                return;
+            }
+
+            let html = '<div class="search-results-header"><span>' + feedName + ' — ' + results.length + ' results</span><button class="search-results-close" onclick="closeSearchResults()">&times;</button></div>';
+            results.forEach(r => {
+                const safeTitle = r.title.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const safeUrl = r.url.replace(/"/g, '&quot;');
+                html += '<div class="search-result-item">' +
+                    '<span class="search-result-title" title="' + safeTitle + '">' + safeTitle + '</span>' +
+                    '<button class="search-result-add" onclick="addSearchResultToQueue(\'' + safeUrl.replace(/'/g, "\\'") + '\')">+ Queue</button>' +
+                    '</div>';
+            });
+            searchResultsDiv.innerHTML = html;
+            searchResultsDiv.style.display = '';
+        }
+
+        function closeSearchResults() {
+            searchResultsDiv.style.display = 'none';
+        }
+
+        function addSearchResultToQueue(url) {
+            queueUrlInput.value = url;
+            queueAddUrl();
+        }
+
+        rssSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') searchRss();
+        });
+
+        // Load feeds on startup
+        loadRssFeeds();
     </script>
 </body>
 </html>

@@ -95,5 +95,55 @@ def fetch_url():
     return jsonify({"text": text, "title": title})
 
 
+RSS_FEEDS = {
+    "hackernews": {
+        "name": "Hacker News",
+        "search_url": "https://hnrss.org/newest?q={query}&count={count}",
+    },
+}
+
+
+@app.route('/search-rss', methods=['POST'])
+def search_rss():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON body"}), 400
+
+    query = data.get('query', '').strip()
+    if not query:
+        return jsonify({"error": "No search query provided"}), 400
+
+    feed_id = data.get('feed', 'hackernews')
+    count = min(int(data.get('count', 10)), 30)
+
+    feed_config = RSS_FEEDS.get(feed_id)
+    if not feed_config:
+        return jsonify({"error": f"Unknown feed: {feed_id}"}), 400
+
+    try:
+        import feedparser
+        url = feed_config["search_url"].format(query=query, count=count)
+        feed = feedparser.parse(url)
+
+        results = []
+        for entry in feed.entries[:count]:
+            results.append({
+                "title": entry.get("title", ""),
+                "url": entry.get("link", ""),
+                "published": entry.get("published", ""),
+            })
+
+        return jsonify({"results": results, "feed_name": feed_config["name"]})
+    except ImportError:
+        return jsonify({"error": "feedparser is not installed"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch RSS feed: {str(e)}"}), 500
+
+
+@app.route('/rss-feeds', methods=['GET'])
+def list_rss_feeds():
+    return jsonify({fid: cfg["name"] for fid, cfg in RSS_FEEDS.items()})
+
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
